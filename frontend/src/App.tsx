@@ -59,7 +59,7 @@ const App: React.FC = () => {
         msg.id === tempAssistantId 
           ? { 
               ...msg, 
-              content: 'Here is the generated Spark logic based on your request:', 
+              content: data.chat_response ? data.chat_response : 'Here is the generated Spark logic based on your request:', 
               loading: false,
               plan: data.plan,
               code: data.code,
@@ -90,8 +90,7 @@ const App: React.FC = () => {
       
       {/* Header */}
       <header style={{ padding: '1rem 2rem', backgroundColor: '#ffffff', borderBottom: '1px solid #e5e5e5', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        <span style={{ fontSize: '1.5rem' }}>🏗️</span>
-        <h1 style={{ margin: 0, fontSize: '1.25rem', color: '#1a1a1a' }}>Liaison-Spark</h1>
+        <h1 style={{ margin: 0, fontSize: '1.25rem', color: '#1a1a1a' }}>Liaison-Spark: The Autonomous Big Data Analyst</h1>
       </header>
 
       {/* Chat Area */}

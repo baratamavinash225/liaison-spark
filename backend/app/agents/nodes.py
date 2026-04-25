@@ -81,3 +81,21 @@ If there are issues, reply with a description of the issues."""
         return {"errors": ""}
     else:
         return {"errors": review, "iteration": state.get("iteration", 0) + 1}
+
+
+def router_node(state: AgentState):
+    user_query = state["messages"][-1].content
+    prompt = f"""You are an intent classifier for an AI Data Analyst agent.
+Determine if the user is asking for a PySpark script, a data query, or data insights (DATA) OR if they are just making conversation, saying hello, or asking non-data related questions (CHAT).
+User query: {user_query}
+Reply with ONLY 'DATA' or 'CHAT'."""
+    response = get_llm().invoke([SystemMessage(content=prompt)]).content.strip()
+    return {"is_data_query": response == "DATA"}
+
+def chat_node(state: AgentState):
+    user_query = state["messages"][-1].content
+    prompt = f"""You are Liaison-Spark, a helpful Autonomous Big Data Analyst assistant.
+The user said: {user_query}
+Respond conversationally. Do not write any PySpark code. If they ask about your capabilities, mention you can analyze Data Lakes and generate optimized PySpark jobs."""
+    response = get_llm().invoke([SystemMessage(content=prompt)]).content.strip()
+    return {"chat_response": response}

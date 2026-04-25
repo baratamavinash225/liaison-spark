@@ -24,9 +24,10 @@ class QueryRequest(BaseModel):
     query: str
 
 class QueryResponse(BaseModel):
-    plan: str
-    code: str
-    errors: str
+    plan: str = ""
+    code: str = ""
+    errors: str = ""
+    chat_response: str = "" 
 
 @app.post("/api/generate", response_model=QueryResponse)
 def generate_code(req: QueryRequest):
@@ -41,7 +42,8 @@ def generate_code(req: QueryRequest):
         return QueryResponse(
             plan=state_output.get("plan", ""),
             code=state_output.get("code", ""),
-            errors=state_output.get("errors", "")
+            errors=state_output.get("errors", ""),
+            chat_response=state_output.get("chat_response", "")
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
