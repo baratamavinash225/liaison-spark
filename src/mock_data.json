@@ -1,0 +1,102 @@
+{
+  "tables": [
+    {
+      "name": "retail_transactions",
+      "description": "Fact table containing daily retail transactions.",
+      "columns": [
+        {
+          "name": "transaction_id",
+          "type": "string",
+          "description": "Unique identifier for the transaction"
+        },
+        {
+          "name": "customer_id",
+          "type": "string",
+          "description": "Identifier for the customer"
+        },
+        {
+          "name": "store_id",
+          "type": "string",
+          "description": "Identifier for the store"
+        },
+        {
+          "name": "product_id",
+          "type": "string",
+          "description": "Identifier for the product"
+        },
+        {
+          "name": "quantity",
+          "type": "int",
+          "description": "Number of items purchased"
+        },
+        {
+          "name": "amount",
+          "type": "double",
+          "description": "Total transaction amount"
+        },
+        {
+          "name": "event_date",
+          "type": "date",
+          "description": "Date of the transaction. Use this for filtering."
+        }
+      ],
+      "partition_keys": [
+        "event_date"
+      ],
+      "size": "large",
+      "sample_rows": [
+        {
+          "transaction_id": "T001",
+          "customer_id": "C001",
+          "store_id": "S01",
+          "product_id": "P01",
+          "quantity": 2,
+          "amount": 25.5,
+          "event_date": "2025-01-01"
+        }
+      ]
+    },
+    {
+      "name": "customer_dim",
+      "description": "Dimension table with customer details.",
+      "columns": [
+        {
+          "name": "customer_id",
+          "type": "string",
+          "description": "Unique identifier for the customer"
+        },
+        {
+          "name": "first_name",
+          "type": "string",
+          "description": "Customer's first name"
+        },
+        {
+          "name": "last_name",
+          "type": "string",
+          "description": "Customer's last name"
+        },
+        {
+          "name": "region",
+          "type": "string",
+          "description": "Geographical region of the customer"
+        },
+        {
+          "name": "signup_date",
+          "type": "date",
+          "description": "Date when the customer signed up"
+        }
+      ],
+      "partition_keys": [],
+      "size": "small",
+      "sample_rows": [
+        {
+          "customer_id": "C001",
+          "first_name": "John",
+          "last_name": "Doe",
+          "region": "UK",
+          "signup_date": "2023-05-10"
+        }
+      ]
+    }
+  ]
+}
