@@ -1,7 +1,7 @@
-import os
 from typing import Optional, Any, Dict, Union
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
+from app.core.config import settings
 
 class LLMService:
     """
@@ -10,12 +10,12 @@ class LLMService:
     """
     def __init__(self):
         # Load application-wide defaults from environment variables
-        self.default_model = os.environ.get("LLM_MODEL", "gpt-4o")
-        self.default_temperature = float(os.environ.get("LLM_TEMPERATURE", "0.0"))
-        self.default_embedding_model = os.environ.get("EMBEDDING_MODEL", "gemini-embedding-001")
+        self.default_model = settings.LLM_MODEL
+        self.default_temperature = settings.LLM_TEMPERATURE
+        self.default_embedding_model = settings.EMBEDDING_MODEL
         
         # Base URL is completely optional. If not set, ChatOpenAI uses standard OpenAI routing.
-        self.base_url = os.environ.get("OPENAI_BASE_URL", None)
+        self.base_url = settings.OPENAI_BASE_URL
 
     def get_llm(
         self, 

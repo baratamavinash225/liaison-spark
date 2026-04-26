@@ -1,11 +1,11 @@
-import os
 import weaviate
+from app.core.config import settings
 
 class WeaviateClientService:
     def __init__(self):
-        self.host = os.environ.get("WEAVIATE_HOST")
-        self.port = os.environ.get("WEAVIATE_PORT")
-        self.grpc_port = os.environ.get("WEAVIATE_GRPC_PORT")
+        self.host = settings.WEAVIATE_HOST
+        self.port = settings.WEAVIATE_PORT
+        self.grpc_port = settings.WEAVIATE_GRPC_PORT
 
         # Fail fast validation if minimum OS parameters are missing
         if not all([self.host, self.port, self.grpc_port]):

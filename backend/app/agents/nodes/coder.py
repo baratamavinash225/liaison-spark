@@ -1,7 +1,7 @@
 from langchain_core.messages import HumanMessage
 from app.agents.state import AgentState
 from app.agents.nodes.base import BaseNode
-from app.domain.semantic_layer import semantic_layer
+from app.rag.semantic_layer import semantic_layer
 
 class CoderNode(BaseNode):
     async def __call__(self, state: AgentState) -> dict:
