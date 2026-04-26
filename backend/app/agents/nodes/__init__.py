@@ -1,9 +1,10 @@
 from app.services.llm_service import llm_service
+
 from .architect import ArchitectNode
+from .chat import ChatNode
 from .coder import CoderNode
 from .reviewer import ReviewerNode
 from .router import RouterNode
-from .chat import ChatNode
 
 # Instantiate nodes and inject dependencies
 architect_node = ArchitectNode(llm_service)

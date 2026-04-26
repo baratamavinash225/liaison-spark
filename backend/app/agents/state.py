@@ -1,5 +1,8 @@
-from typing import TypedDict, Sequence
+from collections.abc import Sequence
+from typing import TypedDict
+
 from langchain_core.messages import BaseMessage
+
 
 class AgentState(TypedDict, total=False):
     messages: Sequence[BaseMessage]

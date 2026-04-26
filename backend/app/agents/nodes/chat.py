@@ -1,6 +1,8 @@
 from langchain_core.messages import HumanMessage
-from app.agents.state import AgentState
+
 from app.agents.nodes.base import BaseNode
+from app.agents.state import AgentState
+
 
 class ChatNode(BaseNode):
     async def __call__(self, state: AgentState) -> dict:
@@ -8,6 +10,8 @@ class ChatNode(BaseNode):
         prompt = f"""You are Liaison-Spark, a helpful Autonomous Big Data Analyst assistant.
 The user said: {user_query}
 Respond conversationally. Do not write any PySpark code. If they ask about your capabilities, mention you can analyze Data Lakes and generate optimized PySpark jobs."""
-        
-        response = await self.llm_service.get_llm().ainvoke([HumanMessage(content=prompt)])
+
+        response = await self.llm_service.get_llm().ainvoke(
+            [HumanMessage(content=prompt)]
+        )
         return {"chat_response": response.content.strip()}

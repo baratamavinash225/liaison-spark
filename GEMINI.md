@@ -18,6 +18,7 @@ Liaison-Spark acts as an autonomous assistant that translates natural language i
 - **LLMs:** Google Gemini (`gemini-2.5-flash` / `gemini-1.5-pro`) & OpenAI fallback.
 - **Embeddings:** Google `text-embedding-004` (or `gemini-embedding-001`)
 - **Frontend:** React (JSX)
+- **PackageManager:** uv
 
 ---
 

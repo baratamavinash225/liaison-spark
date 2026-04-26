@@ -1,7 +1,9 @@
 from langchain_core.messages import HumanMessage
-from app.agents.state import AgentState
+
 from app.agents.nodes.base import BaseNode
+from app.agents.state import AgentState
 from app.rag.semantic_layer import semantic_layer
+
 
 class CoderNode(BaseNode):
     async def __call__(self, state: AgentState) -> dict:
@@ -9,11 +11,11 @@ class CoderNode(BaseNode):
         user_query = state["messages"][-1].content
         schema_context = semantic_layer.get_context(user_query)
         errors = state.get("errors", "")
-        
+
         error_context = f"\nPREVIOUS ERRORS TO FIX:\n{errors}\n" if errors else ""
-        
+
         prompt = f"""You are a Senior PySpark Developer. Your job is to write PySpark code based on the Architect's plan.
-        
+
 Here is the schema:
 {schema_context}
 
@@ -27,7 +29,9 @@ Write ONLY the PySpark code. The code should:
 4. Print the result using .show().
 
 Output ONLY Python code, no markdown wrappers if possible."""
-        
-        response = await self.llm_service.get_llm().ainvoke([HumanMessage(content=prompt)])
+
+        response = await self.llm_service.get_llm().ainvoke(
+            [HumanMessage(content=prompt)]
+        )
         code = response.content.replace("```python", "").replace("```", "").strip()
         return {"code": code}

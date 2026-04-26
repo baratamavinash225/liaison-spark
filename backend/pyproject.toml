@@ -1,7 +1,7 @@
 [project]
 name = "liaison-spark"
 version = "0.1.0"
-description = "Add your description here"
+description = "Autonomous Big Data Analyst & PySpark Generator"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
@@ -26,3 +26,39 @@ dependencies = [
     "uvicorn>=0.46.0",
     "weaviate-client>=4.21.0",
 ]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.9.0",
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+]
+
+[tool.ruff]
+# Match the template's strictness
+line-length = 88
+target-version = "py312"
+fix = true
+
+[tool.ruff.lint]
+# template-standard rules:
+# E/W: pycodestyle, F: Pyflakes, I: isort, B: flake8-bugbear, UP: pyupgrade
+select = ["E", "W", "F", "I", "B", "UP", "N"]
+ignore = ["E501"] # Formatting handles line length
+
+[tool.ruff.lint.isort]
+# Keeps your heavy LangChain/Telemetry imports organized
+combine-as-imports = true
+force-single-line = false
+known-first-party = ["app"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+
+[tool.pytest.ini_options]
+# Essential for your async LangGraph nodes
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]

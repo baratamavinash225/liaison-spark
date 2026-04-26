@@ -1,5 +1,7 @@
 import weaviate
+
 from app.core.config import settings
+
 
 class WeaviateClientService:
     def __init__(self):
@@ -21,11 +23,12 @@ class WeaviateClientService:
             http_secure=False,  # Set to True if using a managed cloud Weaviate
             grpc_host=self.host,
             grpc_port=int(self.grpc_port),
-            grpc_secure=False
+            grpc_secure=False,
         )
 
     def get_client(self) -> weaviate.WeaviateClient:
         return self.client
+
 
 # Singleton instance to be used across the application
 weaviate_service = WeaviateClientService()

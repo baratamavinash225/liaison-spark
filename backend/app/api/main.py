@@ -7,9 +7,9 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.core.config import settings
 from app.api.routes import router as api_router
-from app.core.exceptions.exceptions import LiaisonBaseException
+from app.core.config import settings
+from app.core.exceptions.exceptions import LiaisonBaseError
 from app.core.logging.logging import setup_logging
 from app.core.telemetry.telemetry import setup_telemetry
 from app.services.weaviate_service import weaviate_service
@@ -17,11 +17,16 @@ from app.services.weaviate_service import weaviate_service
 setup_logging()
 logger = structlog.get_logger(__name__)
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    logger.info("application_startup", project_name=settings.PROJECT_NAME, version=settings.VERSION)
+    logger.info(
+        "application_startup",
+        project_name=settings.PROJECT_NAME,
+        version=settings.VERSION,
+    )
     yield
-    
+
     logger.info("application_shutdown")
     try:
         weaviate_service.get_client().close()
@@ -29,12 +34,13 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.exception("weaviate_close_failed", error=str(e))
 
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
     description=settings.DESCRIPTION,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -56,10 +62,12 @@ setup_telemetry(app)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     """Format Pydantic validation errors to be more frontend-friendly."""
     logger.error("validation_error", path=request.url.path, errors=str(exc.errors()))
-    
+
     formatted_errors = []
     for error in exc.errors():
-        loc = " -> ".join([str(loc_part) for loc_part in error["loc"] if loc_part != "body"])
+        loc = " -> ".join(
+            [str(loc_part) for loc_part in error["loc"] if loc_part != "body"]
+        )
         formatted_errors.append({"field": loc, "message": error["msg"]})
 
     return JSONResponse(
@@ -67,20 +75,24 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         content={"detail": "Validation error", "errors": formatted_errors},
     )
 
-@app.exception_handler(LiaisonBaseException)
-async def liaison_exception_handler(request: Request, exc: LiaisonBaseException):
+
+@app.exception_handler(LiaisonBaseError)
+async def liaison_exception_handler(request: Request, exc: LiaisonBaseError):
     """Handle custom application exceptions (like Rate Limits) gracefully."""
-    logger.error("liaison_exception", path=request.url.path, status_code=exc.status_code, message=exc.message)
-    return JSONResponse(
+    logger.error(
+        "liaison_exception",
+        path=request.url.path,
         status_code=exc.status_code,
-        content={"detail": exc.message}
+        message=exc.message,
     )
+    return JSONResponse(status_code=exc.status_code, content={"detail": exc.message})
 
 
 # ---------------------------------------------------------
 # Routes
 # ---------------------------------------------------------
 app.include_router(api_router, prefix=settings.API_V1_STR)
+
 
 @app.get("/", tags=["Health"])
 async def root(request: Request):
@@ -93,6 +105,7 @@ async def root(request: Request):
         "swagger_url": "/docs",
         "redoc_url": "/redoc",
     }
+
 
 @app.get("/health", tags=["Health"])
 async def health_check(request: Request):
@@ -107,11 +120,13 @@ async def health_check(request: Request):
         "status": "healthy" if db_healthy else "degraded",
         "version": settings.VERSION,
         "components": {
-            "api": "healthy", 
-            "weaviate_vector_db": "healthy" if db_healthy else "unhealthy"
+            "api": "healthy",
+            "weaviate_vector_db": "healthy" if db_healthy else "unhealthy",
         },
         "timestamp": datetime.now().isoformat(),
     }
 
-    status_code = status.HTTP_200_OK if db_healthy else status.HTTP_503_SERVICE_UNAVAILABLE
+    status_code = (
+        status.HTTP_200_OK if db_healthy else status.HTTP_503_SERVICE_UNAVAILABLE
+    )
     return JSONResponse(content=response, status_code=status_code)

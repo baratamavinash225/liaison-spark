@@ -1,6 +1,13 @@
 from .exceptions import (
-    LiaisonBaseException,
-    LLMRateLimitException,
-    LLMProviderException,
-    VectorDBException
+    LiaisonBaseError,
+    LLMProviderError,
+    LLMRateLimitError,
+    VectorDBError,
 )
+
+__all__ = [
+    "LiaisonBaseError",
+    "LLMProviderError",
+    "LLMRateLimitError",
+    "VectorDBError",
+]

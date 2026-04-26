@@ -1,13 +1,15 @@
 import logging
 import os
 import sys
-from typing import Any, Dict
+from typing import Any
+
 import structlog
 from opentelemetry import trace
 
+
 def extract_opentelemetry_context(
-    logger: logging.Logger, log_method: str, event_dict: Dict[str, Any]
-) -> Dict[str, Any]:
+    logger: logging.Logger, log_method: str, event_dict: dict[str, Any]
+) -> dict[str, Any]:
     """Inject OpenTelemetry trace and span IDs into the log record."""
     span = trace.get_current_span()
     if span.is_recording():
@@ -16,6 +18,7 @@ def extract_opentelemetry_context(
         event_dict["span_id"] = trace.format_span_id(context.span_id)
     return event_dict
 
+
 def setup_logging():
     """
     Configure structlog for robust production-ready logging.
@@ -23,8 +26,10 @@ def setup_logging():
     - Adds OpenTelemetry tracing context.
     - Uses Console rendering in dev, and JSON rendering in production.
     """
-    is_development = os.environ.get("ENVIRONMENT", "development").lower() == "development"
-    
+    is_development = (
+        os.environ.get("ENVIRONMENT", "development").lower() == "development"
+    )
+
     # 1. Clear existing standard loggers (prevents double logging)
     logging.root.handlers = []
 
@@ -41,9 +46,8 @@ def setup_logging():
 
     # 3. Configure structlog
     structlog.configure(
-        processors=shared_processors + [
-            structlog.stdlib.ProcessorFormatter.wrap_for_formatter
-        ],
+        processors=shared_processors
+        + [structlog.stdlib.ProcessorFormatter.wrap_for_formatter],
         logger_factory=structlog.stdlib.LoggerFactory(),
         wrapper_class=structlog.stdlib.BoundLogger,
         cache_logger_on_first_use=True,
@@ -54,14 +58,16 @@ def setup_logging():
         foreign_pre_chain=shared_processors,
         processors=[
             structlog.stdlib.ProcessorFormatter.remove_processors_meta,
-            structlog.dev.ConsoleRenderer(colors=True) if is_development else structlog.processors.JSONRenderer()
-        ]
+            structlog.dev.ConsoleRenderer(colors=True)
+            if is_development
+            else structlog.processors.JSONRenderer(),
+        ],
     )
 
     # 5. Route all standard logs through our structlog formatter
     handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(formatter)
-    
+
     root_logger = logging.getLogger()
     root_logger.addHandler(handler)
     root_logger.setLevel(logging.INFO)
