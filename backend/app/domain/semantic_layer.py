@@ -1,7 +1,8 @@
 import os
 from langchain_core.documents import Document
-from langchain_chroma import Chroma
+from langchain_weaviate.vectorstores import WeaviateVectorStore
 from app.services.llm_service import llm_service
+from app.services.weaviate_service import weaviate_service
 
 class SemanticLayer:
     def __init__(self):
@@ -20,13 +21,20 @@ class SemanticLayer:
             Document(page_content="Table: default.web_logs\nDescription: Clickstream data.\nColumns: session_id (string), user_id (string), url (string)\nPartition Keys: event_date (date)")
         ]
         
-        # 3. Vectorized Context (ChromaDB)
-        # Embeds the catalog into an ephemeral in-memory Chroma instance for RAG
+        # 3. Vectorized Context (WeaviateDB)
         self.embeddings = llm_service.get_embeddings()
-        self.vector_store = Chroma.from_documents(
+        
+        client = weaviate_service.get_client()
+        
+        # Drop existing collection to prevent duplicates during hot reloads
+        if client.collections.exists("HiveMetastoreCatalog"):
+            client.collections.delete("HiveMetastoreCatalog")
+            
+        self.vector_store = WeaviateVectorStore.from_documents(
             documents=self.catalog, 
             embedding=self.embeddings,
-            collection_name="hive_metastore_catalog"
+            client=client,
+            index_name="HiveMetastoreCatalog"
         )
 
     def get_context(self, query: str, k: int = 2) -> str:

@@ -8,10 +8,8 @@ async def should_continue(state: AgentState):
     return "coder"
 
 async def route_initial(state: AgentState):
-    if state.get("is_data_query"):
-        return "architect"
-    else:
-        return "chat_node"
+    # Dynamically route to whatever the LLM decided
+    return state.get("next_node", "chat_node")
 
 def create_workflow():
     workflow = StateGraph(AgentState)

@@ -7,5 +7,6 @@ class AgentState(TypedDict, total=False):
     code: str
     errors: str
     iteration: int
-    is_data_query: bool
+    next_node: str
+    routing_reasoning: str
     chat_response: str

@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
@@ -12,7 +13,12 @@ from app.api.routes import router as api_router
 setup_logging()
 logger = structlog.get_logger(__name__)
 
-app = FastAPI(title="Liaison-Spark API")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    logger.info("application_started", framework="FastAPI", env="development")
+    yield
+
+app = FastAPI(title="Liaison-Spark API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -26,7 +32,3 @@ app.add_middleware(
 setup_telemetry(app)
 
 app.include_router(api_router, prefix="/api")
-
-@app.on_event("startup")
-async def startup_event():
-    logger.info("application_started", framework="FastAPI", env="development")
