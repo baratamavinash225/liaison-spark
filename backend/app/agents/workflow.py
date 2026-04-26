@@ -2,12 +2,12 @@ from langgraph.graph import StateGraph, END
 from app.agents.state import AgentState
 from app.agents.nodes import architect_node, coder_node, reviewer_node, router_node, chat_node
 
-def should_continue(state: AgentState):
+async def should_continue(state: AgentState):
     if state.get("errors") == "" or state.get("iteration", 0) >= 3:
         return "end"
     return "coder"
 
-def route_initial(state: AgentState):
+async def route_initial(state: AgentState):
     if state.get("is_data_query"):
         return "architect"
     else:

@@ -1,12 +1,9 @@
-import os
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from langchain_core.messages import HumanMessage
 from dotenv import load_dotenv
 
 load_dotenv()
-from app.agents.workflow import create_workflow
+from app.api.routes import router as api_router
 
 app = FastAPI(title="Liaison-Spark API")
 
@@ -18,32 +15,4 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-workflow = create_workflow()
-
-class QueryRequest(BaseModel):
-    query: str
-
-class QueryResponse(BaseModel):
-    plan: str = ""
-    code: str = ""
-    errors: str = ""
-    chat_response: str = "" 
-
-@app.post("/api/generate", response_model=QueryResponse)
-def generate_code(req: QueryRequest):
-    initial_state = {
-        "messages": [HumanMessage(content=req.query)],
-        "iteration": 0,
-        "errors": ""
-    }
-
-    try:
-        state_output = workflow.invoke(initial_state)
-        return QueryResponse(
-            plan=state_output.get("plan", ""),
-            code=state_output.get("code", ""),
-            errors=state_output.get("errors", ""),
-            chat_response=state_output.get("chat_response", "")
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+app.include_router(api_router, prefix="/api")
