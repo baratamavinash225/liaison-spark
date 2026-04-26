@@ -1,6 +1,7 @@
 import os
-from typing import Optional, Any, Dict
-from langchain_openai import ChatOpenAI
+from typing import Optional, Any, Dict, Union
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 
 class LLMService:
     """
@@ -11,6 +12,7 @@ class LLMService:
         # Load application-wide defaults from environment variables
         self.default_model = os.environ.get("LLM_MODEL", "gpt-4o")
         self.default_temperature = float(os.environ.get("LLM_TEMPERATURE", "0.0"))
+        self.default_embedding_model = os.environ.get("EMBEDDING_MODEL", "gemini-embedding-001")
         
         # Base URL is completely optional. If not set, ChatOpenAI uses standard OpenAI routing.
         self.base_url = os.environ.get("OPENAI_BASE_URL", None)
@@ -20,22 +22,57 @@ class LLMService:
         model: Optional[str] = None, 
         temperature: Optional[float] = None, 
         **kwargs: Any
-    ) -> ChatOpenAI:
+    ) -> Union[ChatOpenAI, ChatGoogleGenerativeAI]:
         """
-        Creates and returns a ChatOpenAI instance.
+        Creates and returns a ChatOpenAI or ChatGoogleGenerativeAI instance.
         Defaults are used unless explicitly overridden via arguments.
         """
+        model_name = model if model is not None else self.default_model
+        
         llm_kwargs: Dict[str, Any] = {
-            "model": model if model is not None else self.default_model,
+            "model": model_name,
             "temperature": temperature if temperature is not None else self.default_temperature,
             **kwargs
         }
         
-        # Only inject base_url if it's explicitly configured
-        if self.base_url:
-            llm_kwargs["base_url"] = self.base_url
-            
-        return ChatOpenAI(**llm_kwargs)
+        if model_name.startswith("gemini"):
+            return ChatGoogleGenerativeAI(**llm_kwargs)
+        else:
+            # Only inject base_url if it's explicitly configured
+            if self.base_url:
+                llm_kwargs["base_url"] = self.base_url
+                
+            return ChatOpenAI(**llm_kwargs)
+
+    def get_embeddings(
+        self, 
+        model: Optional[str] = None, 
+        **kwargs: Any
+    ) -> Union[OpenAIEmbeddings, GoogleGenerativeAIEmbeddings]:
+        """
+        Creates and returns an Embeddings instance.
+        Defaults are used unless explicitly overridden via arguments.
+        """
+        model_name = model if model is not None else self.default_embedding_model
+        
+        embed_kwargs: Dict[str, Any] = {
+            "model": model_name,
+            **kwargs
+        }
+        
+        # Route to Google if using Google's conventions or 'gemini'
+        if model_name.startswith("models/") or "gemini-embedding" in model_name or "text-embedding-004" in model_name or "embedding-001" in model_name or "gemini" in model_name:
+            # Gemini API expects the 'models/' prefix for embeddings
+            if not model_name.startswith("models/"):
+                embed_kwargs["model"] = f"models/{model_name}"
+            return GoogleGenerativeAIEmbeddings(**embed_kwargs)
+        else:
+            # Optional: Remove the next 2 lines if MeshAPI strictly doesn't support embeddings
+            # and you want to default directly to standard OpenAI servers for embeddings instead.
+            if self.base_url:
+                embed_kwargs["base_url"] = self.base_url
+                
+            return OpenAIEmbeddings(**embed_kwargs)
 
 # Create a singleton instance to be imported and used across our application
 llm_service = LLMService()

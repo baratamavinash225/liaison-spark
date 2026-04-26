@@ -1,12 +1,13 @@
-from langchain_core.messages import SystemMessage
+from langchain_core.messages import HumanMessage
 from app.agents.state import AgentState
-from app.domain.metadata import get_schema_context
 from app.agents.nodes.base import BaseNode
+from app.domain.semantic_layer import semantic_layer
 
 class CoderNode(BaseNode):
     async def __call__(self, state: AgentState) -> dict:
         plan = state["plan"]
-        schema_context = get_schema_context()
+        user_query = state["messages"][-1].content
+        schema_context = semantic_layer.get_context(user_query)
         errors = state.get("errors", "")
         
         error_context = f"\nPREVIOUS ERRORS TO FIX:\n{errors}\n" if errors else ""
@@ -27,6 +28,6 @@ Write ONLY the PySpark code. The code should:
 
 Output ONLY Python code, no markdown wrappers if possible."""
         
-        response = await self.llm_service.get_llm().ainvoke([SystemMessage(content=prompt)])
+        response = await self.llm_service.get_llm().ainvoke([HumanMessage(content=prompt)])
         code = response.content.replace("```python", "").replace("```", "").strip()
         return {"code": code}

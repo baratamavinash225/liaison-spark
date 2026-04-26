@@ -1,4 +1,4 @@
-from langchain_core.messages import SystemMessage
+from langchain_core.messages import HumanMessage
 from app.agents.state import AgentState
 from app.agents.nodes.base import BaseNode
 
@@ -17,7 +17,7 @@ Code to review:
 If the code is PERFECT and safe for production, reply EXACTLY with "APPROVED".
 If there are issues, reply with a description of the issues."""
         
-        response = await self.llm_service.get_llm().ainvoke([SystemMessage(content=prompt)])
+        response = await self.llm_service.get_llm().ainvoke([HumanMessage(content=prompt)])
         review = response.content.strip()
         
         if review == "APPROVED":
